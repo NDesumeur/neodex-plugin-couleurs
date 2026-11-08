@@ -1,7 +1,7 @@
 {
   "id": "neodex.couleurs",
   "name": "Couleurs",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": "NDesumeur",
   "description": "L'outil des couleurs : une pipette qui prend une couleur n'importe où sur l'écran, ses codes HEX, RGB, HSL, CMJN et CSS à copier, les harmonies (complémentaire, analogues, triade, carré, nuances), le contraste WCAG d'un texte sur un fond, et des palettes à créer, tirer d'une image, copier en CSS ou exporter, synchronisées entre tes PC.",
   "icon": "icon.png",
