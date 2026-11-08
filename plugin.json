@@ -3,7 +3,7 @@
   "name": "Couleurs",
   "version": "1.1.1",
   "author": "NDesumeur",
-  "description": "Une pipette partout sur l'écran, formats, harmonies, contraste et palettes.",
+  "description": "L'outil des couleurs : une pipette qui prend une couleur n'importe où sur l'écran, ses codes HEX, RGB, HSL, CMJN et CSS à copier, les harmonies (complémentaire, analogues, triade, carré, nuances), le contraste WCAG d'un texte sur un fond, et des palettes à créer, tirer d'une image, copier en CSS ou exporter, synchronisées entre tes PC.",
   "icon": "icon.png",
   "entry": "index.js",
   "view": "couleurs",
