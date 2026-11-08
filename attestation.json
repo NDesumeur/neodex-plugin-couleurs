@@ -1,9 +1,9 @@
 {
   "pluginId": "neodex.couleurs",
   "repo": "NDesumeur/neodex-plugin-couleurs",
-  "version": "1.1.1",
-  "sha256": "2c749295e9117999f9dbcb98566489f89410ee5ff37b093ca60d918f5ebacfea",
-  "approvedAt": "2026-11-06T21:35:47.974Z",
+  "version": "1.1.2",
+  "sha256": "629d6ee98c9c2ab29602ee92b9822408ad0ade5ad4d3630298bf0d17dee593e3",
+  "approvedAt": "2026-11-08T12:10:47.085Z",
   "neobase": ">=4.0.0",
-  "signature": "3zY96/RPDIelOwK7Ncip/sfmaLyzJENLlz5qK3NklzAl1wtCfJM8JgIZOJHErQ3WN0fdaa1MF0Q8wWJ5bABzAg=="
+  "signature": "dnOVIFTlUbnarlhoWCJGbReATCRYIR4HZsW5U7CsgP6d1v8qVfNs+yYgCs/mhvzffjBWyruVhGw5nQzT3J7MCQ=="
 }
