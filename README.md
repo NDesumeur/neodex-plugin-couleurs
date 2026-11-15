@@ -46,3 +46,7 @@ Tes palettes et tes dernières couleurs sont enregistrées par NeoDex, sauvegard
 Dans NeoDex : **NeoStore → À découvrir → Couleurs → Installer**.
 
 Développer un plugin : voir le [SDK NeoDex](https://github.com/NDesumeur/neodex-sdk).
+
+## Taille de l’écran (1.1.4)
+
+Les pastilles des harmonies, le grand aperçu de la couleur et la colonne des noms grandissent ou rétrécissent avec la fenêtre : chaque harmonie tient sur une ligne, d’un petit portable à un grand écran. Sous 900 px de large, les deux colonnes passent l’une sous l’autre.

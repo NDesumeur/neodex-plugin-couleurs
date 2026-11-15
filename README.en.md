@@ -46,3 +46,7 @@ Your palettes and recent colours are stored by NeoDex, backed up and synced betw
 In NeoDex: **NeoStore → Discover → Couleurs → Install**.
 
 Building a plugin: see the [NeoDex SDK](https://github.com/NDesumeur/neodex-sdk).
+
+## Screen size (1.1.4)
+
+Harmony swatches, the large colour preview and the names column grow or shrink with the window: each harmony fits on one line, from a small laptop to a large screen. Below 900 px wide, the two columns stack.

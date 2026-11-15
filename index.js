@@ -17,17 +17,18 @@ const HTML = "";
 .ofDropM .tbtn{padding:8px 10px}
 .ofDropM .tbtn:hover{background:rgba(var(--mgr),.16);color:#fff}
 .coBody{display:flex;gap:18px;align-items:flex-start}
+@media (max-width:900px){.coBody{flex-direction:column;align-items:stretch}}
 .coCol{flex:1;display:flex;flex-direction:column;gap:18px;min-width:0}
 .coPick{display:flex;gap:10px;align-items:stretch}
-.coBig{flex:1;height:130px;display:grid;place-items:center;font:20px var(--title);box-shadow:inset 0 0 0 3px rgba(0,0,0,.2)}
+.coBig{flex:1;height:clamp(100px,15vh,190px);display:grid;place-items:center;font:20px var(--title);box-shadow:inset 0 0 0 3px rgba(0,0,0,.2)}
 .coNative{width:56px;height:auto;min-height:40px;border:0;padding:0;background:none;cursor:var(--cp,pointer)}
 .coFmt{display:flex;gap:8px;align-items:center}
 .coFmt .label{width:54px}
-.coFmt input{flex:1;padding:6px 10px;font:14px Consolas,monospace}
-.coFmt .btn{padding:6px 10px;font-size:9px}
+.coFmt input{flex:1;min-width:0;padding:6px 10px;font:clamp(14px,1vw,17px) Consolas,monospace}
+.coFmt .btn{padding:6px 10px;font-size:11px}
 .coRow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.coRow>.hint{width:170px}
-.coSw{all:unset;cursor:var(--cp,pointer);width:34px;height:34px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25),0 3px 0 rgba(0,0,0,.35)}
+.coRow>.hint{width:clamp(112px,11vw,190px);margin-right:8px}
+.coSw{all:unset;cursor:var(--cp,pointer);width:clamp(26px,2.3vw,44px);height:clamp(26px,2.3vw,44px);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25),0 3px 0 rgba(0,0,0,.35)}
 .coSw:hover{transform:translateY(-2px)}
 .coPrev{padding:16px;font-size:16px}
 .coPrev b{display:block;font-size:20px;margin-bottom:4px}
