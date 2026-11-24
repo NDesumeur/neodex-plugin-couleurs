@@ -40,6 +40,11 @@ const HTML = "";
 .coShot img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
 .coLoupe{position:fixed;width:121px;height:121px;image-rendering:pixelated;box-shadow:0 0 0 3px #fff,0 0 0 6px #000;pointer-events:none}
 .coLbl{position:fixed;padding:4px 8px;font:11px var(--title);pointer-events:none;box-shadow:0 0 0 2px #000}
+.coGen{display:flex;gap:6px;height:clamp(120px,18vh,220px)}
+.coGc{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;padding:8px 4px;cursor:var(--cp,pointer);box-shadow:inset 0 0 0 2px rgba(0,0,0,.2)}
+.coGc span{font:clamp(11px,.9vw,14px) Consolas,monospace}
+.coGc button{all:unset;cursor:var(--cp,pointer);font:10px var(--title);padding:3px 6px;background:rgba(0,0,0,.28);color:inherit}
+.coGc button.on{background:rgba(0,0,0,.6)}
 .coShotHelp{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);color:#fff;padding:8px 14px;font:10px var(--title);pointer-events:none}
 `;  // le style de ce plugin (il utilise les variables du thème de NeoDex)
 export default async function (ctx) {
@@ -104,6 +109,30 @@ function coParse(s) {  // #hex, rgb(…), hsl(…) or "r, g, b"
   if (n.length >= 3) return coHex(n);
   return null;
 }
+// la vision des daltoniens (Machado 2009, sévérité 100 %), calculée en lumière linéaire
+const CO_CVD = { protan: [.152286, 1.052583, -.204868, .114503, .786281, .099216, -.003882, -.048116, 1.051998], deutan: [.367322, .860646, -.227968, .280085, .672501, .047413, -.011820, .042940, .968881], tritan: [1.255528, -.076749, -.178779, -.078411, .930809, .147602, .004733, .691367, .303900] };
+function coCvd(hex, kind) {
+  const M = CO_CVD[kind]; if (!M) return hex;
+  const lin = coRgb(hex).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; });
+  return coHex([0, 3, 6].map(i => { const v = Math.max(0, Math.min(1, M[i] * lin[0] + M[i + 1] * lin[1] + M[i + 2] * lin[2])); return (v <= .0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - .055) * 255; }));
+}
+// une palette de 5 couleurs qui vont ensemble ; les couleurs bloquées restent, les autres suivent leur teinte
+function coGenerate(old = [], r = Math.random) {
+  const lockedH = old.filter(c => c.lock).map(c => coHsl(coRgb(c.hex))[0]), H = lockedH.length ? lockedH[0] : r() * 360;
+  const plans = [[0, 20, 40, 180, 200], [0, 30, 60, 90, 120], [0, 120, 240, 0, 120], [0, 0, 180, 180, 30], [0, 15, -15, 150, 210]], plan = plans[r() * plans.length | 0];
+  const Ls = [18 + r() * 12, 34 + r() * 10, 50 + r() * 10, 66 + r() * 10, 82 + r() * 10].sort(() => r() - .5);
+  return [0, 1, 2, 3, 4].map(i => old[i]?.lock ? old[i] : { hex: coHex(coFromHsl([H + plan[i] + (r() - .5) * 16, 40 + r() * 45, Ls[i]])), lock: false });
+}
+// les fichiers de palette : GIMP / Inkscape / Krita (.gpl) et Adobe (.ase)
+const coGpl = p => 'GIMP Palette\nName: ' + p.name + '\nColumns: ' + p.colors.length + '\n#\n' + p.colors.map(x => coRgb(x).map(v => String(v).padStart(3)).join(' ') + '\t' + x.toUpperCase()).join('\n') + '\n';
+function coAse(p) {
+  const parts = [], u16 = v => parts.push(v >> 8 & 255, v & 255), u32 = v => { u16(v >>> 16); u16(v & 65535); }, f32 = v => { const b = new DataView(new ArrayBuffer(4)); b.setFloat32(0, v); parts.push(...new Uint8Array(b.buffer)); };
+  [65, 83, 69, 70].forEach(c => parts.push(c)); u16(1); u16(0); u32(p.colors.length);
+  for (const x of p.colors) { const name = x.toUpperCase(); u16(1); u32(2 + (name.length + 1) * 2 + 4 + 12 + 2); u16(name.length + 1); for (const ch of name) u16(ch.charCodeAt(0)); u16(0); [82, 71, 66, 32].forEach(c => parts.push(c)); coRgb(x).forEach(v => f32(v / 255)); u16(2); }
+  return new Uint8Array(parts);
+}
+{ const g = coGenerate([{ hex: '#336699', lock: true }], () => .5), a = coAse({ colors: ['#ff0000'] });
+  console.assert(g.length === 5 && g[0].hex === '#336699' && new Set(g.map(c => c.hex)).size === 5 && coCvd('#ff0000', 'deutan') !== '#ff0000' && coCvd('#808080', 'protan') === '#808080' && a.length === 54 && coGpl({ name: 'x', colors: ['#000000'] }).includes('  0   0   0'), 'générateur, daltonisme, fichiers'); }
 const co = {};
 function coMount() {
   const v = $('colorsApp'), w = el('div', 'appWrap wide'), head = el('div', 'agHead'), body = el('div', 'coBody');
@@ -134,6 +163,11 @@ async function coPickScreen() {
   addEventListener('keydown', key, true);
   ov.onclick = e => { const h = px(at(e)); end(); coSet(h, true); navigator.clipboard.writeText(h.toUpperCase()).catch(() => {}); toast(h.toUpperCase() + ' copiée'); };
 }
+function coRegen() { tools.colors.gen = coGenerate(tools.colors.gen); toolsSave(); coRender(); }
+document.addEventListener('keydown', e => {
+  if (e.key !== ' ' || e.ctrlKey || e.altKey || !co.body?.isConnected || !tools || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName) || e.target?.isContentEditable || document.querySelector('.coShot')) return;
+  e.preventDefault(); coRegen();
+});
 function coRender() {
   if (!co.body || !tools) return;
   const c = tools.colors, hex = c.cur, rgb = coRgb(hex), hsl = coHsl(rgb), [h, s, l] = hsl;
@@ -174,6 +208,9 @@ function coRender() {
     const r = el('div', 'coPal'), top = el('div', 'row'), name = el('b', '', p.name), add = el('button', 'btn px', '+ ' + hex.toUpperCase()), more = ofDrop('…', [
       ['Renommer', async () => { const n = await ask('Nom de la palette', p.name); if (n?.trim()) { p.name = n.trim(); toolsSave(); coRender(); } }],
       ['Copier en CSS', () => navigator.clipboard.writeText(':root {\n' + p.colors.map((x, i) => `  --${p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${i + 1}: ${x};`).join('\n') + '\n}').then(() => toast('Variables CSS copiées'))],
+      ['Copier pour Tailwind', () => navigator.clipboard.writeText("'" + p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + "': {\n" + p.colors.map((x, i) => `  ${(i + 1) * 100}: '${x}',`).join('\n') + '\n},').then(() => toast('Couleurs Tailwind copiées (theme.extend.colors)'))],
+      ['Télécharger .gpl (GIMP, Inkscape, Krita)', () => coSave(new Blob([coGpl(p)], {type: 'text/plain'}), p.name + '.gpl')],
+      ['Télécharger .ase (Adobe)', () => coSave(new Blob([coAse(p)], {type: 'application/octet-stream'}), p.name + '.ase')],
       ['Copier la liste', () => navigator.clipboard.writeText(p.colors.join(', ')).then(() => toast('Couleurs copiées'))],
       ['Exporter (.json)…', () => window.neo.officeExport({name: p.name, format: 'json', text: JSON.stringify(p, null, 2)})],
       ['Supprimer', async () => { if (await nbConfirm('Supprimer la palette « ' + p.name + ' » ?')) { c.palettes = c.palettes.filter(x => x !== p); toolsSave(); coRender(); } }]]);
@@ -189,9 +226,24 @@ function coRender() {
     r.append(n, img, fi); return r;
   })());
   const hist = card('Dernières couleurs prises', ...(c.history.length ? [(() => { const r = el('div', 'coRow'); r.append(...c.history.map(x => sw(x))); return r; })()] : [el('div', 'hint', 'Les couleurs prises à la pipette arrivent ici.')]));
-  const colL = el('div', 'coCol'), colR = el('div', 'coCol'); colL.append(left, hist); colR.append(mid, contrast, pals);
+  // le générateur : espace pour une nouvelle palette, les couleurs bloquées restent
+  c.gen ??= coGenerate();
+  const vis = co.vis || '';
+  const gen = el('div', 'coGen'); gen.append(...c.gen.map((g, i) => { const shown = coCvd(g.hex, vis), col = el('div', 'coGc'), lk = el('button', g.lock ? 'on' : '', g.lock ? 'BLOQUÉE' : 'BLOQUER');
+    col.style.background = shown; col.style.color = coLum(coRgb(shown)) > .4 ? '#000' : '#fff'; col.title = 'Clic : choisir cette couleur · Espace : nouvelle palette';
+    lk.title = 'Garder cette couleur quand tu génères'; lk.onclick = e => { e.stopPropagation(); g.lock = !g.lock; toolsSave(); coRender(); };
+    col.onclick = () => coSet(g.hex, true); col.append(el('span', '', g.hex.toUpperCase()), lk); return col; }));
+  const gr = el('div', 'row'), go = el('button', 'btn main px', 'GÉNÉRER (ESPACE)'), keep = el('button', 'btn px', 'GARDER EN PALETTE'), vs = el('select', 'f');
+  for (const [k, n] of [['', 'Vision normale'], ['protan', 'Protanopie (sans rouge)'], ['deutan', 'Deutéranopie (sans vert)'], ['tritan', 'Tritanopie (sans bleu)']]) { const o = el('option', '', n); o.value = k; o.selected = k === vis; vs.append(o); }
+  vs.title = 'Voir les couleurs comme une personne daltonienne'; vs.style.width = 'auto'; vs.onchange = () => { co.vis = vs.value; coRender(); };
+  go.onclick = coRegen;
+  keep.onclick = () => { c.palettes.push({id: Date.now().toString(36), name: 'Palette ' + (c.palettes.length + 1), colors: c.gen.map(g => g.hex)}); toolsSave(); coRender(); toast('Palette gardée dans Mes palettes'); };
+  gr.append(go, keep, vs);
+  const genCard = card('Générateur', gen, gr);
+  const colL = el('div', 'coCol'), colR = el('div', 'coCol'); colL.append(left, hist); colR.append(genCard, mid, contrast, pals);
   co.body.replaceChildren(colL, colR);
 }
+function coSave(blob, name) { const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name.replace(/[\\/:*?"<>|]+/g, '_'); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast(name + ' enregistré dans tes téléchargements'); }
 // main colours of a picture: a few rounds of k-means on a small copy of it
 function coExtract(img, k = 6) {
   const c = document.createElement('canvas'), s = Math.min(1, 80 / Math.max(img.width, img.height)); c.width = Math.max(1, img.width * s | 0); c.height = Math.max(1, img.height * s | 0);
@@ -211,4 +263,5 @@ function coExtract(img, k = 6) {
 coMount();  // (non indenté : les textes sur plusieurs lignes restent exactement les tiens)
   // ---- fin ----
   ctx.onOpen(() => { toolsReady().then(coRender); });
+  view.__co = { coGenerate, coCvd, coAse, coGpl, regen: () => coRegen(), get gen() { return tools?.colors.gen; } };  // pour le test « local »
 }

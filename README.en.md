@@ -4,6 +4,10 @@ The colour tool: pick a colour anywhere on your screen, read it in every format,
 
 *Version française : [README.md](README.md)*
 
+## Palette generator (new in 1.2.0)
+
+Space for a new palette of five colours, with locks; colour-blind vision; Tailwind, GPL and ASE exports.
+
 ## Picking a colour
 
 - **Screen eyedropper**: NeoDex hides for a moment and shows a capture of your whole screen; click the colour to pick (**Escape** to cancel). It works on every window, not just NeoDex.
@@ -36,6 +40,12 @@ A preview shows a heading and some text in your colour on a background you choos
 - **+ New palette** creates one with the current colour; **+ #colour** adds the current colour to a palette; **double-click** a swatch to remove it.
 - **From an image…**: choose an image and its 6 main colours become a palette.
 - A palette's **…** menu lets you rename it, copy it as CSS variables or as a list, export it as `.json`, or delete it.
+
+## Generator, colour blindness and exports (1.2.0)
+
+- **Generator**: press **Space** (or **GENERATE**) for a new palette of five colours that go together. **LOCK** keeps a colour; the next ones follow its hue. Click a colour to pick it, **SAVE AS PALETTE** stores it in My palettes.
+- **Colour blindness**: the list under the generator shows the palette as someone without red, green or blue sees it.
+- **Exports**: in a palette's **…** menu, **Copy for Tailwind**, **Download .gpl** (GIMP, Inkscape, Krita) and **Download .ase** (Adobe), besides CSS.
 
 ## Data and sync
 
